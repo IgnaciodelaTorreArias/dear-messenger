@@ -1,5 +1,4 @@
 import time
-from random import random
 
 # For getting the interfaces and let the user select one
 from socket import AF_INET, AF_INET6
@@ -116,7 +115,7 @@ class Application(grpc_messenger.ViewUpdate):
             dpg.render_dearpygui_frame()
             if not self._changed_address:
                 continue
-            with grpc_messenger.Backend(self._address, self) as b:
+            with grpc_messenger.Backend(self._address, self, thread_safe_view=True) as b:
                 if b is None: # Failed to initialize server
                     dpg.show_item("interfaces")
                     dpg.set_primary_window("interfaces", True) # Select another interface
@@ -125,9 +124,7 @@ class Application(grpc_messenger.ViewUpdate):
                     continue
                 dpg.hide_item("interfaces")
                 self._backend = b
-                while dpg.is_dearpygui_running():
-                    dpg.render_dearpygui_frame()
-                    self._backend.render()
+                dpg.start_dearpygui()
         dpg.destroy_context()
 
     def interface_selector(self):
